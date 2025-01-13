@@ -1,64 +1,79 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class Shoot : MonoBehaviour
 {
     public GameObject bulletPrefab;
-    public Transform shootPoint; // A transform where the bullet should spawn (usually the gun or player position)
+    public Transform shootPoint; // Point where bullet should spawn.
     private float bulletSpeed;
-    private GameObject currentBullet;
+    private GameObject currentBullet; // Reference to the current bullet.
     bool isCharging = false;
+    public TextMeshProUGUI chargeText;
 
     private void OnEnable()
     {
-        Actions.onShootStarted += InstantiateBullet;
+        // Subscribe to shooting input events.
+        Actions.onShootStarted += StartCharging;
         Actions.onShootPerformed += ChargeShot;
         Actions.onShootCanceled += FireShot;
     }
 
     private void OnDisable()
     {
-        Actions.onShootStarted -= InstantiateBullet;
+        // Unsubscribe from shooting input events. 
+        Actions.onShootStarted -= StartCharging;
         Actions.onShootPerformed -= ChargeShot;
         Actions.onShootCanceled -= FireShot;
     }
 
-    // Instantiate a new bullet at the player's position
-    void InstantiateBullet()
+    void StartCharging()
     {
-        bulletSpeed = 5f;
+        Debug.Log("Shoot button pressed.");
+        chargeText.gameObject.SetActive(true);
+        bulletSpeed = 1f;
+        isCharging = true;
+        chargeText.text = "Charging: " + bulletSpeed + "%";
     }
 
-    // Charge shot by gradually increasing speed
     void ChargeShot()
     {
-        if (!isCharging)
+        Debug.Log("Shoot button is being held.");
+        if (isCharging)
         {
-            isCharging = true;
+            // Start charging.
             StartCoroutine(IncreaseShotSpeed());
-        }
-
+        }       
     }
 
     private IEnumerator IncreaseShotSpeed()
     {
-        while (bulletSpeed < 200f)
+        while (isCharging && bulletSpeed < 100f)
         {
-            bulletSpeed += 20f;
-            yield return new WaitForSeconds(0.1f); // Adjust the speed increase rate
+            // Gradually increase the bullet speed, capped at 100.
+            bulletSpeed += 1f;
+            chargeText.text = "Charging: " + bulletSpeed + "%";
+            yield return new WaitForSeconds(0.02f); 
         }
     }
 
 
     void FireShot()
     {
+        Debug.Log("Shoot button released.");
+
         if (currentBullet == null)
         {
-            GameObject currentBullet = Instantiate(bulletPrefab, shootPoint.position, shootPoint.rotation);
-        currentBullet.transform.position += currentBullet.transform.forward * bulletSpeed * Time.deltaTime;
+            // Instantiate a bullet from the gun.
+            currentBullet = Instantiate(bulletPrefab, shootPoint.position, shootPoint.rotation);
         }
+        // Fire the bullet, reset the speed and stop charging.
+        currentBullet.GetComponent<Rigidbody>().velocity = shootPoint.forward * bulletSpeed;
         bulletSpeed = 0f;
         isCharging = false;
+        chargeText.text = "Charging: " + bulletSpeed + "%";
+
+        chargeText.gameObject.SetActive(false);
     }
 }
