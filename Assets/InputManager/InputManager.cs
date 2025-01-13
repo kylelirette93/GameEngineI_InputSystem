@@ -5,6 +5,10 @@ using UnityEngine.InputSystem;
 public class InputManager : MonoBehaviour, GameInput.IGameplayActions
 {
     public GameInput gameInput;
+    public GameObject player;
+
+   
+    
 
     void Start()
     {
@@ -13,25 +17,54 @@ public class InputManager : MonoBehaviour, GameInput.IGameplayActions
         gameInput.Gameplay.SetCallbacks(this);
     }
 
-    #region Public Actions
-
-    private Action JumpEvent;
-    private Action CrouchEvent;
-
-    #endregion
+    
     public void OnJump(InputAction.CallbackContext context)
     {
+        if (context.started)
+        {
+            Actions.onJumpStarted?.Invoke();
+        }
         if (context.performed)
         {
-            JumpEvent?.Invoke();
+            Actions.onJumpPerformed?.Invoke();
+        }
+        if (context.canceled)
+        {
+            Actions.onJumpCanceled?.Invoke();
         }
     }
 
     public void OnCrouch(InputAction.CallbackContext context)
     {
+        if (context.started)
+        {
+            Actions.onCrouchStarted?.Invoke();
+        }
         if (context.performed)
         {
-            CrouchEvent?.Invoke();
+            Actions.onCrouchPerformed?.Invoke();
+        }
+        if (context.canceled)
+        {
+            Actions.onCrouchCanceled?.Invoke();
         }
     }
+
+    public void OnShoot(InputAction.CallbackContext context)
+    {
+        if (context.started)
+        {
+            Actions.onShootStarted?.Invoke();
+        }
+        if (context.performed)
+        {
+            Actions.onShootPerformed?.Invoke();
+        }
+        if (context.canceled)
+        {
+            Actions.onShootCanceled?.Invoke();
+        }
+    }
+
+    
 }
